@@ -42,7 +42,7 @@ class Customer {
    * last name.
    *
    * if no customers are found, throws 404 NotFoundError
-   FIXME: split search to fix first/last searchability */
+  */
   static async searchCustomers(str) {
     const results = await db.query(
       `SELECT id,
@@ -51,8 +51,7 @@ class Customer {
                   phone,
                   notes
            FROM customers
-           WHERE first_name ILIKE $1
-            OR last_name ILIKE $1
+           WHERE CONCAT(first_name,' ', last_name) ILIKE $1
            ORDER BY last_name, first_name`,
       [`%${str}%`]
     );
