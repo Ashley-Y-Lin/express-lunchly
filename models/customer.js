@@ -42,7 +42,7 @@ class Customer {
    * last name.
    *
    * if no customers are found, throws 404 NotFoundError
-   */
+   FIXME: split search to fix first/last searchability */
   static async searchCustomers(str) {
     const results = await db.query(
       `SELECT id,
@@ -51,13 +51,13 @@ class Customer {
                   phone,
                   notes
            FROM customers
-           WHERE first_name LIKE $1
-            OR last_name LIKE $1
+           WHERE first_name ILIKE $1
+            OR last_name ILIKE $1
            ORDER BY last_name, first_name`,
-          [`%${str}%`]
+      [`%${str}%`]
     );
 
-    if (!results.rows[0]){
+    if (!results.rows[0]) {
       return {};
     }
 
@@ -88,6 +88,30 @@ class Customer {
     }
 
     return new Customer(customer);
+  }
+
+
+  /** get top 10 customers with most reservations. */
+
+  static async getTopTenByMostReservations() {
+    const results = await db.query(
+      `SELECT c.id,
+                  c.first_name AS "firstName",
+                  c.last_name  AS "lastName",
+                  c.phone,
+                  c.notes,
+                  COUNT(r.customer_id) as "numReservations"
+           FROM customers AS c
+           INNER JOIN reservations AS r
+           ON r.customer_id = c.id
+           GROUP BY c.id
+           ORDER BY COUNT(r.customer_id) DESC
+           LIMIT 10`
+    );
+
+    const topTenCustomers = results.rows;
+
+    return topTenCustomers.map(c => new Customer(c));
   }
 
   /** get all reservations for this customer. */

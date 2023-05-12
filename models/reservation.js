@@ -41,7 +41,7 @@ class Reservation {
   }
 
   /** save this reservation. */
-
+  //FIXME: Re-name the query params to correct column names
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
@@ -54,7 +54,7 @@ class Reservation {
     } else {
       await db.query(
         `UPDATE reservations
-             SET customerId=$1,
+             SET customer_id=$1,
                 numGuests=$2,
                 startAt=$3,
                 notes=$4

@@ -25,6 +25,16 @@ router.get("/", async function (req, res, next) {
   return res.render("customer_list.html", { customers });
 });
 
+
+/** Top Ten: show list of top ten customers with most reviews. */
+
+router.get("/top-ten", async function (req, res, next) {
+  const customers = await Customer.getTopTenByMostReservations();
+
+  return res.render("customer_top.html", { customers });
+});
+
+
 /** Form to add a new customer. */
 
 router.get("/add/", async function (req, res, next) {
@@ -99,5 +109,7 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
 
   return res.redirect(`/${customerId}/`);
 });
+
+
 
 module.exports = router;
