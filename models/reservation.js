@@ -5,7 +5,7 @@
 const moment = require("moment");
 
 const db = require("../db");
-const { BadRequestError } = require("../expressError");
+const { NotFoundError, BadRequestError } = require("../expressError");
 
 /** A reservation for a party */
 
@@ -23,6 +23,37 @@ class Reservation {
 
   getFormattedStartAt() {
     return moment(this.startAt).format("MMMM Do YYYY, h:mm a");
+  }
+
+  /** reverse formatter for startAt */
+
+  getUnformattedStartAt() {
+    return moment(this.startAt).format("YYYY-MM-DD HH:mm A");
+  }
+
+  /** Gets or sets reservation customerId. Ensures customerId cannot be
+   * reassigned if it already has a value. */
+
+  get customerId() {
+    return this._customerId;
+  }
+
+  set customerId(id) {
+    if (this._customerId)
+      throw new BadRequestError("Reservations are not transferable.");
+    this._customerId = id;
+  }
+
+  /** Gets or sets reservation start date. Ensures startAt is a Date object. */
+
+  get startAt() {
+    return this._startAt;
+  }
+
+  set startAt(date) {
+    if (!date instanceof Date)
+      throw new BadRequestError("Date must be a Date object.");
+    this._startAt = date;
   }
 
   /** Gets or sets number of guests */
@@ -44,10 +75,36 @@ class Reservation {
   }
 
   set notes(val) {
-    if (!val)
-      throw new BadRequestError("Note cannot be a falsy value");
+    if (!val) {
+      this._notes = '';
+    }
     this._notes = val;
   }
+
+
+  /** get a reservation by ID. */
+
+  static async get(id) {
+    const results = await db.query(
+      `SELECT id,
+                  customer_id AS "customerId",
+                  num_guests AS "numGuests",
+                  start_at AS "startAt",
+                  notes AS "notes"
+           FROM reservations
+           WHERE id = $1`,
+      [id],
+    );
+
+    const reservation = results.rows[0];
+
+    if (reservation === undefined) {
+      throw new NotFoundError(`No such reservation: ${id}`);
+    }
+
+    return new Reservation(reservation);
+  }
+
 
 
   /** given a customer id, find their reservations. */

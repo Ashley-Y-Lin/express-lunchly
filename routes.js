@@ -10,6 +10,9 @@ const Reservation = require("./models/reservation");
 
 const router = new express.Router();
 
+
+//////////////////// Customer Routes ////////////////////
+
 /** Homepage: show list of customers. */
 
 router.get("/", async function (req, res, next) {
@@ -79,6 +82,38 @@ router.post("/:id/edit/", async function (req, res, next) {
 
   return res.redirect(`/${customer.id}/`);
 });
+
+
+//////////////////// Reservation Routes ////////////////////
+
+/** Show form to edit a reservation. */
+
+router.get("/:customerId/edit-reservation/:reservationId", async function (req, res, next) {
+  const customer = await Customer.get(req.params.customerId);
+  const reservation = await Reservation.get(req.params.reservationId);
+
+  res.render("customer_edit_reservation.html", { customer, reservation });
+});
+
+/** Handle edit reservation form submission. */
+
+router.post("/:customerId/edit-reservation/:reservationId", async function (req, res, next) {
+  const customerId = req.params.customerId
+
+  if (req.body === undefined) {
+    throw new BadRequestError();
+  }
+
+  const reservation = await Reservation.get(req.params.reservationId);
+
+  reservation.startAt = req.body.startAt;
+  reservation.numGuests = req.body.numGuests;
+  reservation.notes = req.body.notes;
+  await reservation.save();
+
+  return res.redirect(`/${customerId}`);
+});
+
 
 /** Handle adding a new reservation. */
 
