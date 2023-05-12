@@ -5,6 +5,7 @@
 const moment = require("moment");
 
 const db = require("../db");
+const { BadRequestError } = require("../expressError");
 
 /** A reservation for a party */
 
@@ -15,6 +16,7 @@ class Reservation {
     this.numGuests = numGuests;
     this.startAt = startAt;
     this.notes = notes;
+
   }
 
   /** formatter for startAt */
@@ -22,6 +24,31 @@ class Reservation {
   getFormattedStartAt() {
     return moment(this.startAt).format("MMMM Do YYYY, h:mm a");
   }
+
+  /** Gets or sets number of guests */
+
+  get numGuests() {
+    return this._numGuests;
+  }
+
+  set numGuests(val) {
+    if (val < 1)
+      throw new BadRequestError("Cannot make reservation for less than 1 guest.");
+    this._numGuests = val;
+  }
+
+  /** Gets or sets reservation note */
+
+  get notes() {
+    return this._notes;
+  }
+
+  set notes(val) {
+    if (!val)
+      throw new BadRequestError("Note cannot be a falsy value");
+    this._notes = val;
+  }
+
 
   /** given a customer id, find their reservations. */
 
@@ -39,6 +66,7 @@ class Reservation {
 
     return results.rows.map(row => new Reservation(row));
   }
+
 
   /** save this reservation. */
 

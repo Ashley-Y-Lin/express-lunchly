@@ -24,20 +24,20 @@ class Customer {
     return this.firstName + ' ' + this.lastName;
   }
 
-  /** find all customers. */
+  // /** find all customers. */
 
-  static async all() {
-    const results = await db.query(
-      `SELECT id,
-                  first_name AS "firstName",
-                  last_name  AS "lastName",
-                  phone,
-                  notes
-           FROM customers
-           ORDER BY last_name, first_name`,
-    );
-    return results.rows.map(c => new Customer(c));
-  }
+  // static async all() {
+  //   const results = await db.query(
+  //     `SELECT id,
+  //                 first_name AS "firstName",
+  //                 last_name  AS "lastName",
+  //                 phone,
+  //                 notes
+  //          FROM customers
+  //          ORDER BY last_name, first_name`,
+  //   );
+  //   return results.rows.map(c => new Customer(c));
+  // }
 
   /** given a string, find all customers with the string in their first or
    * last name.
@@ -45,6 +45,7 @@ class Customer {
    * if no customers are found, throws 404 NotFoundError
   */
   static async searchCustomers(str) {
+    const searchString = str ? `%${str}%` : `%`;
     const results = await db.query(
       `SELECT id,
                   first_name AS "firstName",
@@ -54,7 +55,7 @@ class Customer {
            FROM customers
            WHERE CONCAT(first_name,' ', last_name) ILIKE $1
            ORDER BY last_name, first_name`,
-      [`%${str}%`]
+      [searchString]
     );
 
     if (!results.rows[0]) {
